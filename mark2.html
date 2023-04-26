@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newspapers</title>
+    <style>
+        /* Add your CSS styles here */
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Newspapers in Australia</h1>
+    </header>
+    <main>
+        <section id="newspaper-list">
+            <h2>News Sources</h2>
+            <ul>
+                <li>
+                    <a href="#" data-feed-url="https://www.abc.net.au/news/feed/51120/rss.xml">ABC News (Australia)</a>
+                    - News headlines from Australia and around the world
+                </li>
+                <!-- Add more newspapers here -->
+            </ul>
+        </section>
+    </main>
+    <div id="rss-content"></div>
+    <button id="back-to-list">Back to newspaper list</button>
+    <button id="play-headlines" style="display: none;">Play the headlines</button>
+    <button id="stop-headlines" style="display: none;">Stop playing the headlines</button>
+
+    <script>
+        $(document).ready(function() {
+            $("#newspaper-list a").click(function(event) {
+                event.preventDefault();
+                var rssFeedUrl = $(this).data("feed-url");
+
+                // Fetch RSS feed using PHP and display the content
+                $.post(window.location.href, { url: rssFeedUrl }, function(data) {
+                    var rssContent = $("#rss-content");
+                    rssContent.empty();
+                    $.each(data.items, function(index, item) {
+                        rssContent.append("<h3>" + item.title + "</h3>");
+                        rssContent.append("<p>" + item.description + "</p>");
+                    });
+                }, "json");
+
+                $("#newspaper-list").hide();
+                $("#rss-content").show();
+                $("#back-to-list").show();
+                $("#play-headlines").show();
+                $("#stop-headlines").show();
+            });
+
+            $("#back-to-list").click(function() {
+                $("#newspaper-list").show();
+                $("#rss-content").hide();
+                $("#back-to-list").hide();
+                $("#play-headlines").hide();
+                $("#stop-headlines").hide();
+            });
+
+            // Text-to-speech code
+        });
+    </script>
+
+    <?php
+    if (isset($_POST["url"])) {
+        $rssFeedUrl = $_POST["url"];
+        $rssContent = file_get_contents($rssFeedUrl);
+        $rssXml = simplexml_load_string($rssContent);
+        $rssJson = json_encode($rssXml);
+        echo "<script>var data = " . $rssJson . ";</script>";
+    } else {
+        echo "<script>var data = null;</script>";
+    }
+    ?>
+</body>
+</html>
